@@ -1,35 +1,56 @@
 package org.infosys.dummy;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
 public class EmployeeServiceImpl implements EmployeeService {
-    List<Employee> empList = new ArrayList<>();
+    @Autowired
+    private EmployeeRepository empRepo;
+
     @Override
     public String createEmployee(Employee emp) {
-        empList.add(emp);
+        EmployeeEntity empEntity = new EmployeeEntity();
+        BeanUtils.copyProperties(emp, empEntity);
+        empRepo.save(empEntity);
         return "Employee added successfully";
     }
 
     @Override
     public List<Employee> getAllEmployees() {
-        return empList;
-    }
+        List<EmployeeEntity> emp_e = empRepo.findAll();
+        List<Employee> emplist = new ArrayList<>();
+        for(EmployeeEntity empEntity:emp_e){
+            Employee emp = new Employee();
+            BeanUtils.copyProperties(empEntity, emp);  
+            emplist.add(emp);
+        }
+        return emplist;
+}
 
     @Override
     public boolean deleteEmployee(int id) {
-        return empList.removeIf(emp -> emp.getId() == id);
+       EmployeeEntity empEntity = empRepo.findById(id).orElse(null);
+         if(empEntity == null){
+              return false;
+        }
+        empRepo.delete(empEntity);
+        return true;
     }
+
+    
 
     @Override
     public String updateEmployee(int id, Employee emp) {
-       for(Employee e:empList){
-           if(e.getId()==id){
-               e.setName(emp.getName());
-               e.setDept(emp.getDept());
-               e.setSalary(emp.getSalary());
-               e.setEmail(emp.getEmail());
-               return "Employee updated successfully";
-           }
-    }
-     return "Employee not found";
+        EmployeeEntity empEntity = empRepo.findById(id).orElse(null);
+        if(empEntity == null){
+            return "Employee not found";
+        }
+        BeanUtils.copyProperties(emp, empEntity);
+        empRepo.save(empEntity);
+        return "Employee updated successfully";
 }
 }

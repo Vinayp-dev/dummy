@@ -17,8 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class EmpController {
     // This is called dependency injection, where the controller depends on the service layer to perform operations related to employee management. The service layer is responsible for handling the business logic and data access, while the controller focuses on handling HTTP requests and responses.
     // We are not going to make object for service layer in controller, we will use spring to inject the service layer object into the controller, this is called dependency injection, it helps to decouple the controller and service layer, making the code more modular and easier to test.
+    
     @Autowired
     EmployeeService empService;
+    
     @GetMapping("employees")
     public List<Employee> getAllEmployees(){
         return empService.getAllEmployees();
