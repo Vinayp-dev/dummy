@@ -33,8 +33,7 @@ public class EmpController {
 
     @PutMapping("employees/{id}")
     public String updateEmployee(@PathVariable int id, @RequestBody Employee emp){
-        empService.updateEmployee(id, emp);
-        return "Employee updated successfully";
+        return empService.updateEmployee(id, emp);
     }
 
     @DeleteMapping("employees/{id}")

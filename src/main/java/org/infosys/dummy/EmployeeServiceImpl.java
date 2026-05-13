@@ -49,7 +49,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if(empEntity == null){
             return "Employee not found";
         }
-        BeanUtils.copyProperties(emp, empEntity);
+       BeanUtils.copyProperties(emp, empEntity, "id");
         empRepo.save(empEntity);
         return "Employee updated successfully";
 }

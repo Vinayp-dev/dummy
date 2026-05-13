@@ -1,13 +1,140 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Spring Boot</title>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Employee Manager</title>
+	<style>
+		body { font-family: Arial, sans-serif; margin: 24px; max-width: 900px; }
+		.card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+		label { display: block; margin-top: 10px; }
+		input { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; }
+		button { margin-top: 12px; padding: 8px 12px; cursor: pointer; }
+		table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+		th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+		th { background: #f5f5f5; }
+		.actions button { margin-right: 6px; }
+		#status { margin-top: 10px; color: #0a6; }
+	</style>
 </head>
 <body>
-    <h1>Welcome to Spring Boot</h1>
-    <form action="process-form" method="post">
-        <input type="text" name="num1" placeholder="Enter first number">
-        <input type="text" name="num2" placeholder="Enter second number">
-        <button type="submit">Submit</button>
-    </form>
+	<h1>Employee Manager</h1>
+
+	<div class="card">
+		<h2 id="formTitle">Add Employee</h2>
+		<input type="hidden" id="employeeId" />
+		<label for="name">Name</label>
+		<input type="text" id="name" placeholder="Employee name" />
+		<label for="email">Email</label>
+		<input type="email" id="email" placeholder="Employee email" />
+		<label for="department">Department</label>
+		<input type="text" id="department" placeholder="Department" />
+		<button type="button" onclick="saveEmployee()">Save</button>
+		<button type="button" onclick="resetForm()">Clear</button>
+		<div id="status"></div>
+	</div>
+
+	<div class="card">
+		<h2>Employees</h2>
+		<button type="button" onclick="loadEmployees()">Refresh</button>
+		<table>
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>Email</th>
+					<th>Department</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody id="employeeTable"></tbody>
+		</table>
+	</div>
+
+	<script>
+		const API = '/employees';
+
+		async function loadEmployees() {
+			try {
+				const res = await fetch(API);
+				const employees = await res.json();
+				const tbody = document.getElementById('employeeTable');
+				tbody.innerHTML = '';
+				employees.forEach((emp) => {
+					const tr = document.createElement('tr');
+					tr.innerHTML = `
+						<td>${emp.id ?? ''}</td>
+						<td>${emp.name ?? ''}</td>
+						<td>${emp.email ?? ''}</td>
+						<td>${emp.department ?? ''}</td>
+						<td class="actions">
+							<button type="button" onclick='editEmployee(${JSON.stringify(emp).replace(/'/g, "&#39;")})'>Edit</button>
+							<button type="button" onclick='deleteEmployee(${emp.id})'>Delete</button>
+						</td>
+					`;
+					tbody.appendChild(tr);
+				});
+			} catch (e) {
+				setStatus('Failed to load employees');
+			}
+		}
+
+		async function saveEmployee() {
+			const employee = {
+				name: document.getElementById('name').value,
+				email: document.getElementById('email').value,
+				department: document.getElementById('department').value
+			};
+			const id = document.getElementById('employeeId').value;
+			const method = id ? 'PUT' : 'POST';
+			const url = id ? `${API}/${id}` : API;
+
+			try {
+				const res = await fetch(url, {
+					method,
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(employee)
+				});
+				setStatus(await res.text());
+				resetForm();
+				loadEmployees();
+			} catch (e) {
+				setStatus('Failed to save employee');
+			}
+		}
+
+		async function deleteEmployee(id) {
+			if (!confirm('Delete this employee?')) return;
+			try {
+				const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+				setStatus(await res.text());
+				loadEmployees();
+			} catch (e) {
+				setStatus('Failed to delete employee');
+			}
+		}
+
+		function editEmployee(emp) {
+			document.getElementById('employeeId').value = emp.id ?? '';
+			document.getElementById('name').value = emp.name ?? '';
+			document.getElementById('email').value = emp.email ?? '';
+			document.getElementById('department').value = emp.department ?? '';
+			document.getElementById('formTitle').textContent = 'Edit Employee';
+		}
+
+		function resetForm() {
+			document.getElementById('employeeId').value = '';
+			document.getElementById('name').value = '';
+			document.getElementById('email').value = '';
+			document.getElementById('department').value = '';
+			document.getElementById('formTitle').textContent = 'Add Employee';
+		}
+
+		function setStatus(message) {
+			document.getElementById('status').textContent = message;
+		}
+
+		loadEmployees();
+	</script>
 </body>
 </html>
