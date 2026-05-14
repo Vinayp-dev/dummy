@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+
 // This is a simple REST controller for managing Employee data ,acts like a Manager for Employee records, allowing clients to retrieve and add employees through HTTP requests.
 // It uses an in-memory list to store employee data, which is not suitable for production but serves well for demonstration purposes. The controller provides endpoints to get all employees and add a new employee.
 // We need service layer to store data in database and perform business logic
@@ -25,6 +26,10 @@ public class EmpController {
     public List<Employee> getAllEmployees(){
         return empService.getAllEmployees();
     }
+   @GetMapping("employees/{id}")
+   public Employee getEmployee(@PathVariable int id) {
+       return empService.readEmployee(id);
+   }
    
     @PostMapping("employees")
     public String addEmployee(@RequestBody Employee emp){
