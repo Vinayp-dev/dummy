@@ -30,6 +30,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         BeanUtils.copyProperties(empEntity, emp);
         return emp;
     }
+    @Override
     public List<Employee> getAllEmployees() {
         List<EmployeeEntity> emp_e = empRepo.findAll();
         List<Employee> emplist = new ArrayList<>();
@@ -58,7 +59,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         if(empEntity == null){
             return "Employee not found";
         }
-        BeanUtils.copyProperties(emp, empEntity);
+        // Avoid overwriting the primary key when copying properties from DTO
+        BeanUtils.copyProperties(emp, empEntity, "id");
         empRepo.save(empEntity);
         return "Employee updated successfully";
 }
