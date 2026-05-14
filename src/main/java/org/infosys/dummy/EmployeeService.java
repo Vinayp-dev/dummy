@@ -12,4 +12,5 @@ public interface  EmployeeService {
     List<Employee> getAllEmployees();
     boolean deleteEmployee(int id);
     String updateEmployee(int id, Employee emp);
+    Employee readEmployee(int id);
 }

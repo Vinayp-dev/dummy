@@ -15,11 +15,21 @@ public class EmployeeServiceImpl implements EmployeeService {
     public String createEmployee(Employee emp) {
         EmployeeEntity empEntity = new EmployeeEntity();
         BeanUtils.copyProperties(emp, empEntity);
+        empEntity.setId(0);  // Ensure new employee has no ID (auto-generated)
         empRepo.save(empEntity);
         return "Employee added successfully";
     }
 
     @Override
+    public Employee readEmployee(int id) {
+        EmployeeEntity empEntity = empRepo.findById(id).orElse(null);
+        if(empEntity == null){
+            return null; // or throw an exception
+        }
+        Employee emp = new Employee();
+        BeanUtils.copyProperties(empEntity, emp);
+        return emp;
+    }
     public List<Employee> getAllEmployees() {
         List<EmployeeEntity> emp_e = empRepo.findAll();
         List<Employee> emplist = new ArrayList<>();
@@ -29,8 +39,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             emplist.add(emp);
         }
         return emplist;
-}
-
+    }
     @Override
     public boolean deleteEmployee(int id) {
        EmployeeEntity empEntity = empRepo.findById(id).orElse(null);
@@ -49,7 +58,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if(empEntity == null){
             return "Employee not found";
         }
-       BeanUtils.copyProperties(emp, empEntity, "id");
+        BeanUtils.copyProperties(emp, empEntity);
         empRepo.save(empEntity);
         return "Employee updated successfully";
 }
