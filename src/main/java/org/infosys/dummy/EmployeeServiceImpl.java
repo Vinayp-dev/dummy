@@ -11,6 +11,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private EmployeeRepository empRepo;
 
+    @Autowired
+    private DepartRepository deptRepo;
+
     @Override
     public String createEmployee(Employee emp) {
         EmployeeEntity empEntity = new EmployeeEntity();
@@ -64,4 +67,34 @@ public class EmployeeServiceImpl implements EmployeeService {
         empRepo.save(empEntity);
         return "Employee updated successfully";
 }
+@Override
+public List<Department> getAllDepartments() {
+    List<DepartEntity> departments = deptRepo.findAll();
+    List<Department> deptList = new ArrayList<>();
+    for (DepartEntity deptEntity : departments) {
+        Department dept = new Department();
+        BeanUtils.copyProperties(deptEntity, dept);
+        deptList.add(dept);
+    }
+    return deptList;
+}
+@Override
+public String updateDepartment(int id, Department dept) {
+    DepartEntity deptEntity = deptRepo.findById(id).orElse(null);
+    if (deptEntity == null) {
+        return "Department not found";
+    }
+    BeanUtils.copyProperties(dept, deptEntity, "deptId");
+    deptRepo.save(deptEntity);
+    return "Department updated successfully";
+}
+
+@Override
+public String createDepartment(Department dept) {
+    DepartEntity deptEntity = new DepartEntity();
+    BeanUtils.copyProperties(dept, deptEntity);
+    deptRepo.save(deptEntity);
+    return "Department added successfully";
+}
+
 }

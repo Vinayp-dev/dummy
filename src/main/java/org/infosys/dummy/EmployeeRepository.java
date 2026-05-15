@@ -27,4 +27,5 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Intege
     EmployeeEntity findByName(String name);
     @Query("SELECT e FROM EmployeeEntity e WHERE e.name LIKE %:prefix%")
     List<EmployeeEntity> findByNameStartingWith(@Param("prefix") String prefix);
+    
 }

@@ -1,4 +1,6 @@
 package org.infosys.dummy;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,4 +89,44 @@ public class EmpController {
             return new ResponseEntity<>("Failed to delete employee", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    @GetMapping("Departments")
+    public ResponseEntity<List<Department>> getAllDepartments(){
+        logger.info("Hey dude fetching all departments");
+        try {
+            List<Department> departments = empService.getAllDepartments();
+            return new ResponseEntity<>(departments, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("Error fetching departments", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("Departments")
+    public ResponseEntity<String> addDepartment(@RequestBody Department dept) {
+        try {
+            logger.info("Adding department: {}", dept.getDeptName());
+            String resp = empService.createDepartment(dept);
+            return new ResponseEntity<>(resp, HttpStatus.CREATED);
+        } catch (Exception e) {
+            logger.error("Error adding department", e);
+            return new ResponseEntity<>("Failed to add department", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("Departments/{id}")
+    public ResponseEntity<String> updateDepartment(@PathVariable int id, @RequestBody Department dept) {
+        try {
+            logger.info("Updating department {}", id);
+            String resp = empService.updateDepartment(id, dept);
+            if(resp != null && resp.toLowerCase().contains("not found")){
+                return new ResponseEntity<>(resp, HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(resp, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("Error updating department {}", id, e);
+            return new ResponseEntity<>("Failed to update department", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
+
+
