@@ -450,11 +450,11 @@
         <input type="hidden" id="employeeId" />
         <div class="form-grid">
           <div class="form-field">
-            <label for="employeeName">Name</label>
+            <label for="employeeName">Employee name</label>
             <input id="employeeName" type="text" placeholder="Employee name" />
           </div>
           <div class="form-field">
-            <label for="employeeEmail">Email</label>
+            <label for="employeeEmail">Employee email</label>
             <input id="employeeEmail" type="email" placeholder="employee@company.com" />
           </div>
           <div class="form-field">
@@ -624,8 +624,8 @@
           <td>${formatSalary(employee.salary)}</td>
           <td>
             <div class="row-actions">
-              <button class="secondary" type="button" onclick='editEmployee(${JSON.stringify(employee).replace(/'/g, "&#39;")})'>Edit</button>
-              <button class="danger" type="button" onclick='deleteEmployee(${employee.id})'>Delete</button>
+              <button class="secondary" type="button" onclick="editEmployeeById(${employee.id})">Edit</button>
+              <button class="danger" type="button" onclick="deleteEmployee(${employee.id})">Delete</button>
             </div>
           </td>
         `;
@@ -651,7 +651,7 @@
           <td>${department.deptName ?? ''}</td>
           <td>
             <div class="row-actions">
-              <button class="secondary" type="button" onclick='editDepartment(${JSON.stringify(department).replace(/'/g, "&#39;")})'>Edit</button>
+              <button class="secondary" type="button" onclick="editDepartmentById(${department.deptId})">Edit</button>
             </div>
           </td>
         `;
@@ -742,6 +742,15 @@
       setStatus('employeeStatus', `Editing employee ${employee.id ?? ''}`, '');
     }
 
+    function editEmployeeById(id) {
+      const employee = employees.find((item) => Number(item.id) === Number(id));
+      if (!employee) {
+        setStatus('employeeStatus', 'Employee not found.', 'error');
+        return;
+      }
+      editEmployee(employee);
+    }
+
     function resetEmployeeForm() {
       document.getElementById('employeeId').value = '';
       document.getElementById('employeeName').value = '';
@@ -781,6 +790,15 @@
       document.getElementById('departmentName').value = department.deptName ?? '';
       document.getElementById('departmentFormTitle').textContent = 'Edit Department';
       setStatus('departmentStatus', `Editing department ${department.deptId ?? ''}`, '');
+    }
+
+    function editDepartmentById(id) {
+      const department = departments.find((item) => Number(item.deptId) === Number(id));
+      if (!department) {
+        setStatus('departmentStatus', 'Department not found.', 'error');
+        return;
+      }
+      editDepartment(department);
     }
 
     function resetDepartmentForm() {
