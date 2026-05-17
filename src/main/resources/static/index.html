@@ -434,7 +434,7 @@
           <div class="value" id="departmentCount">0</div>
           <div class="note">Available departments for assignments.</div>
         </div>
-      </div>
+      </div>  
     </section>
 
     <section class="panel-grid">
@@ -467,6 +467,7 @@
             <input id="employeeSalary" type="number" min="0" step="0.01" placeholder="0.00" />
           </div>
         </div>
+        
         <div class="button-row">
           <button class="primary" type="button" onclick="saveEmployee()">Save Employee</button>
           <button class="secondary" type="button" onclick="resetEmployeeForm()">Clear</button>
@@ -522,7 +523,7 @@
                   <th>Salary</th>
                   <th>Actions</th>
                 </tr>
-              </thead>
+              </thead>fetch
               <tbody id="employeeTable"></tbody>
             </table>
           </div>
@@ -557,19 +558,28 @@
 
     <div class="footer-note">Tip: the employee department field accepts any name, but the dropdown is populated from the current department list.</div>
   </main>
+  
 
   <script>
-    const API_BASE = window.location.origin && window.location.origin !== 'null'
-      ? window.location.origin
-      : 'http://localhost:8080';
-
+    const API_BASE = 'http://localhost:8080';
+    // In-memory state for employees and departments we get datafrom backend and store in the arrays to work with it on the frontend without making extra API calls. We update these arrays whenever we load data or make changes, and use them to render the tables and dropdown suggestions.
     let employees = [];
     let departments = [];
-
+    // Helper function to create full api url and return the full url to make api calls more consistent and easier to maintain. We can change the API_BASE variable if our backend url changes, and all api calls will automatically use the new base url.
+    // ` template literal is used here 
     function apiPath(path) {
       return `${API_BASE}${path}`;
     }
-
+    /*
+    Below is aysnc func since it uses await to get response.
+    response is an object we get from fetch api call 
+    it had methods
+    - text() to get the response body as plain text
+    - json() to get the response body as json format
+    - ok to check if the response status is in the 200-299 range which means the request was successful
+    - status to get the http status code of the response
+    - headers to get the response headers which contain metadata about the response like content type, caching
+    */
     async function readMessage(response, fallback) {
       const text = await response.text();
       return text && text.trim() ? text : fallback;
@@ -580,11 +590,21 @@
       element.textContent = message;
       element.className = `status ${kind || ''}`.trim();
     }
-
+   /*
+   document.getElementById - in simple we get the dom element and we can customize it 
+   document.createElement - we can create new dom element and set the content of it and add it to the page
+   document.innerHTML - we can set the content of elemement to a string of html to create multiple html tags inside it and add it to the page
+   document.textContent - we can set the text content of an element to a string to change the text displayed on the page without affecting the html structure of the element
+   document.querySelector - we can use css selectors to get the first element that matches the selector and customize it example document.querySelector('.my-class') to get the first element with class my-class even many 
+   other elements with the same class exist on the page
+   document.querySelectorAll - we can use css selectors to get all elements that match the selector and it returns a node list which we can loop through to customize each element example document.querySelectorAll('.my-class') to get all elements with class my-class and customize them in a loop
+   document.addEventListener - we can listen to events on the page like click, submit, input etc and run a function when the event occurs example document.addEventListener('click', function() { ... }) to run the function when any click happens on the page
+   */
     function formatSalary(value) {
       const amount = Number(value);
       return Number.isFinite(amount) ? amount.toLocaleString(undefined, { style: 'currency', currency: 'USD' }) : '$0.00';
     }
+
 
     function updateCounts() {
       document.getElementById('employeeCount').textContent = employees.length;
@@ -613,7 +633,7 @@
         tbody.appendChild(row);
         return;
       }
-
+       // td tag is used to define a row in the table.
       employees.forEach((employee) => {
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -634,6 +654,13 @@
     }
 
     function renderDepartments() {
+      /* departmentTable is a dom element we can set the content of it to empty string to clear the table.
+      we check the length of depart array ,if it is zero no departments yet ,we create a row with a message to add the first department with the help of table
+      It is mainly used to clear existing rows in the array before showing the new data in the table to avoid duplicate data
+      we start with empty string
+      then we check length of array ,if its zero , we change the html with message No deparments add the department using the form.
+      if array has data,we loop and display on the page in form of a table with edit button.
+      */
       const tbody = document.getElementById('departmentTable');
       tbody.innerHTML = '';
 
@@ -661,7 +688,27 @@
 
     async function loadEmployees() {
       try {
+        // We use the Fetch keyword which is an api to make http requests from browser and get the response
         const response = await fetch(apiPath('/employees'));
+        /*RESPONSE HAS ATTRIBUTES
+          - status: The HTTP status code
+          - headers: The response headers
+          We can use headers to get metadata about the response 
+          caching algorithm used
+          content type of the response
+          which algorithm is used to compress the response
+          which algorithm is used to encode the response
+          which language the server used to send the response like english or german etc
+          what is the server name and version that sent the response  like spring boot or nginx etc
+          what is the size of the response body in bytes
+          session information we can see in the headers if the server set any session cookie or not
+          when the response was generated by the server and when it will expire etc
+          - ok: A boolean indicating if the response status is in the 200-299 range
+          - json(): A method to extract the response body as JSON format
+          - text(): A method to extract the response body as plain text
+          We can create an object to the Error class and pass the message to it, and then throw the error to be caught by the catch block and display the error message to the user in case the response is not ok, or if there is any network error or other issue that prevents us from loading the employees data from the backend.  
+        */
+
         if (!response.ok) {
           throw new Error(await readMessage(response, 'Unable to load employees'));
         }
@@ -696,7 +743,11 @@
         dept: document.getElementById('employeeDept').value.trim(),
         salary: Number(document.getElementById('employeeSalary').value) || 0
       };
-
+      /* JSON.stringify(payload) This method convert js object payload to a json string format to send it in the body of the http request to the backend when we want to save or update an employee record in the backend. The backend expects the data in json format so we need to convert our js object to json string before sending it in the request body. When we receive the response from the backend after saving or updating the employee record, we can use response.json() method to convert the json string response back to a js object that we can work with on the frontend.
+      so for backend convert js object to json string we use json.stringify
+      for frontend we need to use json.parse to convert json string to js object
+      Payload - Javascript object that contains the data we want to send to the backend when we want to save or update an employee record. It has properties like name, email, dept and salary which are the fields of the employee record that we want to save or update in the backend. We create this payload object by getting the values from the form fields on the page and trimming any extra whitespace from them, and then we convert this payload object to json string format using JSON.stringify before sending it in the body of the http request to the backend.
+      */
       try {
         const response = await fetch(apiPath(id ? `/employees/${id}` : '/employees'), {
           method: id ? 'PUT' : 'POST',
@@ -720,6 +771,9 @@
         return;
       }
       try {
+        // We use fetch api to make request to backend .
+        // then we get a response object we pass it to readmessge function to get the message from the response body or use a fallback message if the response body is empty or not in the expected format.
+        // then we check if the response is ok or not using response.ok property which is a boolean that indicates if the response status is in the 200-299 range which means the request was successful and the employee record was deleted in the backend. If the response is not ok we create an error object with the message we got from the response and throw it to be caught by the catch block and display the error message to the user. If the response is ok we set the status message to success and reload the employees data from the backend to update the table on the page and reflect the deleted employee record.
         const response = await fetch(apiPath(`/employees/${id}`), { method: 'DELETE' });
         const message = await readMessage(response, 'Employee deleted successfully');
         if (!response.ok) {
@@ -731,7 +785,23 @@
         setStatus('employeeStatus', error.message || 'Failed to delete employee', 'error');
       }
     }
-
+    /*
+    This function is used to populate form fields with employee data
+    when we want to edit the already existing employee record in the backend. We call this function when we click on the edit button in the employee table, and we pass the employee object that we want to edit as a parameter to this function. Then we set the values of the form fields to the corresponding properties of the employee object, and we also change the form title to indicate that we are editing an existing employee record. 
+    We also set the status message to indicate which employee we are editing. This way we can reuse the same form for both adding new employees and editing existing employees by just changing the form fields values and the form title based on whether we have an employee object to edit or not.
+    what is setStatus:
+    Its a helper funciton we written to set status messages i mean like update succcessfully or failed to update etc
+    this kind of messages are important to give feedback to user what is happening 
+    function setStatus takes three parameters
+    - targetId: the id of the dom element where we want to display the status message
+    - message: the status message we want to display to the user
+    - kind: the type of status message which can be 'success', 'error' or
+    but in this setStatus('employeeStatus', `Editing employee ${employee.id ?? ''}`, '');
+  WE ARE PASSING 
+  - 'employeeStatus'  is the id of the dom element where we want to display the status message for employee related actions
+  - `Editing employee ${employee.id ?? ''}` is the message we want to display to the user which indicates that we are editing an existing employee record and shows the id of the employee we are editing. We use template literal to create this message by embedding the employee id in the string. If the employee id is null or undefined we use an empty string as a fallback.
+  - '' is the kind of status message which means we are not specifying any particular type for this message, so it will use the default styling for status messages which is usually a neutral color. We only use 'success' or 'error' as the kind when we want to indicate a successful action or an error to the user, but in this case we just want to show an informational message that we are editing an employee without indicating success or error, so we pass an empty string for the kind parameter.  
+  */
     function editEmployee(employee) {
       document.getElementById('employeeId').value = employee.id ?? '';
       document.getElementById('employeeName').value = employee.name ?? '';
